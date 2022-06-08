@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "cdefs.h": "c",
+        "callnr.h": "c"
+    }
+}
