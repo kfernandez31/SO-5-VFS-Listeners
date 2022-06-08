@@ -327,6 +327,9 @@ static struct vnode *new_node(struct lookup *resolve, int oflags, mode_t bits)
   /* The combination of a symlink with absolute path followed by a danglink
    * symlink results in a new path that needs to be re-resolved entirely. */
   if (path[0] == '/') {
+	if (susp_count > 0) { /* revive blocked processes */
+    	release(dirp, -1, susp_count);
+	}
 	unlock_vnode(dirp);
 	unlock_vmnt(dir_vmp);
 	put_vnode(dirp);
@@ -458,6 +461,9 @@ static struct vnode *new_node(struct lookup *resolve, int oflags, mode_t bits)
    * once. Releasing the lock would cause the resulting vp not be locked and
    * cause mayhem later on. */
   if (dirp != vp) {
+	if (susp_count > 0) { /* revive blocked processes */
+  		release(dirp, -1, susp_count);
+  	}
 	unlock_vnode(dirp);
   }
   unlock_vmnt(dir_vmp);
@@ -580,6 +586,9 @@ int do_mkdir(void)
 		      fp->fp_effgid, bits);
   }
 
+  if (susp_count > 0) { /* revive blocked processes */
+    release(dirp, -1, susp_count);
+  }
   unlock_vnode(vp);
   unlock_vmnt(vmp);
   put_vnode(vp);

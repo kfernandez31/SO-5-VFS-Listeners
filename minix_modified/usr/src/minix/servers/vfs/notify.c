@@ -4,9 +4,9 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 
-#define suspend_cnt(why){\
+#define suspend_as_listener(why){\
     num_listeners++;\
-    suspend_as_listener(why);\
+    suspend(why);\
     num_listeners--;\
 }\
 
@@ -19,7 +19,7 @@ static int do_notify_open(struct vnode* vnode) {
 }
 
 static int do_notify_triopen(struct vnode* vnode) {
-    if (vnode->v_ref_count < 3) {
+    if (vnode->v_ref_count < THREE) {
         suspend_as_listener(FP_BLOCKED_ON_NOTIFY_TRIOPEN);
     }
     return(OK);
@@ -78,5 +78,3 @@ int do_notify(void) {
         }
     }
 }
-
-

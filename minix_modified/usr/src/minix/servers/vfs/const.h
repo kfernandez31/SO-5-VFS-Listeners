@@ -29,6 +29,7 @@
 #define FP_BLOCKED_ON_NOTIFY_TRIOPEN 7
 #define FP_BLOCKED_ON_NOTIFY_CREATE 8
 #define FP_BLOCKED_ON_NOTIFY_MOVE 9
+#define THREE 3
 
 /* test if the process is blocked on something */
 #define fp_is_blocked(fp)	((fp)->fp_blocked_on != FP_BLOCKED_ON_NONE)
