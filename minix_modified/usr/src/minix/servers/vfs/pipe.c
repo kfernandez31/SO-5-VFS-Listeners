@@ -421,20 +421,6 @@ int count;			/* max number of processes to release */
 				continue;
 			if (scratch(rp).file.filp->filp_vno != vp)
 				continue;
-		} else if (rp->fp_blocked_on == FP_BLOCKED_ON_NOTIFY_OPEN) {
-			f = rp->fp_filp[scratch(rp).file.fd_nr];
-			if (!(f->filp_vno == vp && op == VFS_OPEN)) {
-				continue;
-			}
-		} else if (rp->fp_blocked_on == FP_BLOCKED_ON_NOTIFY_TRIOPEN) {
-			f = rp->fp_filp[scratch(rp).file.fd_nr];
-			if (!(f->filp_vno == vp && op == VFS_OPEN && vp->v_ref_count >= THREE)) {
-				continue;
-			}
-		} else if (rp->fp_blocked_on == FP_BLOCKED_ON_NOTIFY_CREATE) {
-			f = rp->fp_filp[scratch(rp).file.fd_nr];
-		} else if (rp->fp_blocked_on == FP_BLOCKED_ON_NOTIFY_MOVE) {
-			f = rp->fp_filp[scratch(rp).file.fd_nr];
 		} else
 			continue;
 

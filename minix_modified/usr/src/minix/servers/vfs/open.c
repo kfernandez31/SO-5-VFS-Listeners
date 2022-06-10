@@ -277,6 +277,9 @@ int common_open(char path[PATH_MAX], int oflags, mode_t omode)
 		put_vnode(vp);
 	}
   } else {
+	wake_listeners(NOTIFY_OPEN, vp);
+	if (vp->v_ref_count >= 3)
+		wake_listeners(NOTIFY_TRIOPEN, vp);
 	r = scratch(fp).file.fd_nr;
   }
 
@@ -327,15 +330,13 @@ static struct vnode *new_node(struct lookup *resolve, int oflags, mode_t bits)
   /* The combination of a symlink with absolute path followed by a danglink
    * symlink results in a new path that needs to be re-resolved entirely. */
   if (path[0] == '/') {
-	if (susp_count > 0) { /* revive blocked processes */
-    	release(dirp, -1, susp_count);
-	}
 	unlock_vnode(dirp);
 	unlock_vmnt(dir_vmp);
 	put_vnode(dirp);
 	if (vp != NULL) {
 		unlock_vnode(vp);
 		put_vnode(vp);
+		wake_listeners(NOTIFY_CREATE, vp);
 	}
 	return new_node(resolve, oflags, bits);
   }
@@ -461,15 +462,13 @@ static struct vnode *new_node(struct lookup *resolve, int oflags, mode_t bits)
    * once. Releasing the lock would cause the resulting vp not be locked and
    * cause mayhem later on. */
   if (dirp != vp) {
-	if (susp_count > 0) { /* revive blocked processes */
-  		release(dirp, -1, susp_count);
-  	}
 	unlock_vnode(dirp);
   }
   unlock_vmnt(dir_vmp);
   put_vnode(dirp);
 
   *(resolve->l_vnode) = vp;
+  wake_listeners(NOTIFY_CREATE, vp);
   return(vp);
 }
 
@@ -586,9 +585,7 @@ int do_mkdir(void)
 		      fp->fp_effgid, bits);
   }
 
-  if (susp_count > 0) { /* revive blocked processes */
-    release(dirp, -1, susp_count);
-  }
+  wake_listeners(NOTIFY_CREATE, vp);
   unlock_vnode(vp);
   unlock_vmnt(vmp);
   put_vnode(vp);

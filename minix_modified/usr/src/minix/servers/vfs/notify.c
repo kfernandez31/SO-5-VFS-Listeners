@@ -1,46 +1,68 @@
 #include "fs.h"
+#include "notify.h"
 #include "vnode.h"
 #include "file.h"
 #include <fcntl.h>
-#include <sys/stat.h>
 
-#define suspend_as_listener(why){\
-    num_listeners++;\
-    suspend(why);\
-    num_listeners--;\
-}\
+#include <stdio.h>
 
-// number of processes listening on a notify-event 
-static int num_listeners = 0;
+#define is_valid_event(event) (event == NOTIFY_OPEN || event == NOTIFY_TRIOPEN || event == NOTIFY_CREATE || event == NOTIFY_MOVE)
+
+static struct listener* get_free_entry(int event, struct vnode* vnode) {
+    for (int i = 0; i < NR_NOTIFY; i++) {
+        struct listener* listener = &listeners[i];
+        if (listener->l_fproc == NULL) {
+            // slot is ours to use
+            listener->l_vnode = vnode;
+            listener->l_fproc = fp;
+            listener->l_event = event;
+            return listener;
+        }
+    }
+    return NULL;
+}
+
+static int suspend_listener(int event, struct vnode* vnode) {
+    struct listener* listener = get_free_entry(event, vnode);
+    return (listener == NULL)? (ENONOTIFY) : (SUSPEND); 
+}
 
 static int do_notify_open(struct vnode* vnode) {
-    suspend_as_listener(FP_BLOCKED_ON_NOTIFY_OPEN);
-    return(OK);
+    return suspend_listener(NOTIFY_OPEN, vnode);
 }
 
 static int do_notify_triopen(struct vnode* vnode) {
-    if (vnode->v_ref_count < THREE) {
-        suspend_as_listener(FP_BLOCKED_ON_NOTIFY_TRIOPEN);
-    }
-    return(OK);
+    if (vnode->v_ref_count < 3) 
+        return suspend_listener(NOTIFY_TRIOPEN, vnode);
+    return(OK); // proceed without hanging
 }
 
 static int do_notify_create(struct vnode* vnode) {
-    // this should be a directory
-    if (!S_ISDIR(vnode->v_mode)) {
+    // file should be a directory
+    if (!S_ISDIR(vnode->v_mode)) 
         return(ENOTDIR);
-    }
-    suspend_as_listener(FP_BLOCKED_ON_NOTIFY_CREATE);
-    return(OK);
+    return suspend_listener(NOTIFY_CREATE, vnode);
 }
 
 static int do_notify_move(struct vnode* vnode) {
-    // this should be a directory
-    if (!S_ISDIR(vnode->v_mode)) {
+    // file should be a directory
+    if (!S_ISDIR(vnode->v_mode))
         return(ENOTDIR);
+    return suspend_listener(NOTIFY_MOVE, vnode);
+}
+
+void wake_listeners(int event, struct vnode *vnode) {
+    if (!is_valid_event(event))
+        return;
+
+    for (int i = 0; i < NR_NOTIFY; i++) {
+        struct listener* listener = &listeners[i];
+        if (listener->l_fproc != NULL && listener->l_vnode == vnode && listener->l_event == event) {
+            listener->l_fproc = NULL; // free up the slot
+            listener->l_fproc->fp_blocked_on = FP_BLOCKED_ON_NONE;
+            replycode(listener->l_fproc->fp_endpoint, OK); // wake the listener
+        }
     }
-    suspend_as_listener(FP_BLOCKED_ON_NOTIFY_MOVE);
-    return(OK);
 }
 
 int do_notify(void) {
@@ -48,33 +70,20 @@ int do_notify(void) {
     int event = job_m_in.m_lc_vfs_notify.event;
 
     struct filp* filp = get_filp(fd, VNODE_NONE); // no locking needed
-    // invalid file descriptor
     if (filp == NULL) {
-        return(EBADF);
+        return(EBADF); // invalid file descriptor
     }
-    
     struct vnode* vnode = filp->filp_vno;
 
     switch (event) {
         case NOTIFY_OPEN:
-            if (num_listeners == NR_NOTIFY) 
-                return(ENONOTIFY);
             return do_notify_open(vnode);
         case NOTIFY_TRIOPEN:
-            if (num_listeners == NR_NOTIFY)
-                return(ENONOTIFY);
             return do_notify_triopen(vnode);
         case NOTIFY_CREATE:
-            if (num_listeners == NR_NOTIFY) 
-                return(ENONOTIFY);
             return do_notify_create(vnode);
         case NOTIFY_MOVE:
-            if (num_listeners == NR_NOTIFY) 
-                return(ENONOTIFY);
             return do_notify_move(vnode);
-        default: {
-            // invalid event type
-            return(EINVAL);
-        }
     }
+    return(EINVAL); // invalid event type
 }

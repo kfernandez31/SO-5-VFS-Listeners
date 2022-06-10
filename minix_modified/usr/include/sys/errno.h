@@ -171,9 +171,8 @@
 #define	EMULTIHOP	(_SIGN 94 )		/* Multihop attempted */ 
 #define	ENOLINK		(_SIGN 95 )		/* Link has been severed */
 #define	EPROTO		(_SIGN 96 )		/* Protocol error */
-#define	ENONOTIFY		(_SIGN 97 )		/* No more notifications available */
 
-#define	ELAST		(_SIGN 97 )		/* Must equal largest errno */
+#define	ELAST		(_SIGN 96 )		/* Must equal largest errno */
 
 #if defined(_KERNEL) || defined(_KMEMUSER)
 /* pseudo-errors returned inside kernel to modify return to process */

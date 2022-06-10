@@ -1,6 +1,13 @@
 {
     "files.associations": {
         "cdefs.h": "c",
-        "callnr.h": "c"
+        "callnr.h": "c",
+        "array": "c",
+        "bitset": "c",
+        "memory": "c",
+        "string": "c",
+        "vector": "c",
+        "fs.h": "c",
+        "assert.h": "c"
     }
 }

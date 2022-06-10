@@ -300,14 +300,6 @@ struct flock {
 #define	AT_SYMLINK_FOLLOW	0x400	/* Follow symlinks */
 #define	AT_REMOVEDIR		0x800	/* Remove directory only */
 
-/*
- * Event flags used by notify()
- */
-#define	NOTIFY_OPEN	0x00000001	/* file is opened */
-#define	NOTIFY_TRIOPEN	0x00000002	/* file is opened >= 3 times simultaneously */
-#define	NOTIFY_CREATE	0x00000004	/* file is created in the directory */
-#define	NOTIFY_MOVE	0x00000008	/* file is moved to the directory */
-
 #endif
 
 

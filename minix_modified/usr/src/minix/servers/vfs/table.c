@@ -12,6 +12,7 @@
 #include "scratchpad.h"
 #include "vnode.h"
 #include "vmnt.h"
+#include "notify.h"
 
 #define CALL(n) [((n) - VFS_BASE)]
 

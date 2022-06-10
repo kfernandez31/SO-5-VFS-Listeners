@@ -13,6 +13,7 @@
 
 #include "fs.h"
 #include <sys/stat.h>
+#include <fcntl.h>
 #include <string.h>
 #include <minix/com.h>
 #include <minix/callnr.h>
@@ -258,9 +259,9 @@ int do_rename(void)
 	upgrade_vmnt_lock(oldvmp); /* Upgrade to exclusive access */
 	r = req_rename(old_dirp->v_fs_e, old_dirp->v_inode_nr, old_name,
 		       new_dirp->v_inode_nr, fullpath);
-  if (new_dirp != old_dirp && susp_count > 0) { /* revive blocked processes */
-    	release(new_dirp, -1, susp_count);
-	  }
+    if (new_dirp != old_dirp) {
+      wake_listeners(NOTIFY_MOVE, new_dirp);
+    }
   }
 
   unlock_vnode(old_dirp);
