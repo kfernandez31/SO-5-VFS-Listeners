@@ -2,6 +2,6 @@
 /minix_original/
 /mnt/
 minix.img
-/.vscode/
+.vscode/
 test-notify-open.c
 serial.txt
