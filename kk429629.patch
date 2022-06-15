@@ -1,14 +1,3 @@
-diff -rupNEZbB minix_original/usr/src/minix/fs/procfs/pid.c minix_modified/usr/src/minix/fs/procfs/pid.c
---- minix_original/usr/src/minix/fs/procfs/pid.c	2022-06-05 18:10:29.889847322 +0200
-+++ minix_modified/usr/src/minix/fs/procfs/pid.c	2022-06-14 14:02:48.562160784 +0200
-@@ -134,6 +134,7 @@ static void pid_psinfo(int i)
- 		case FP_BLOCKED_ON_LOCK:	f_state = FSTATE_LOCK; break;
- 		case FP_BLOCKED_ON_POPEN:	f_state = FSTATE_POPEN; break;
- 		case FP_BLOCKED_ON_SELECT:	f_state = FSTATE_SELECT; break;
-+		case FP_BLOCKED_ON_NOTIFY:	f_state = FSTATE_NOTIFY; break;
- 		case FP_BLOCKED_ON_OTHER:	f_state = FSTATE_TASK; break;
- 		default:			f_state = FSTATE_UNKNOWN;
- 		}
 diff -rupNEZbB minix_original/usr/src/minix/include/minix/callnr.h minix_modified/usr/src/minix/include/minix/callnr.h
 --- minix_original/usr/src/minix/include/minix/callnr.h	2022-06-05 18:10:29.926513988 +0200
 +++ minix_modified/usr/src/minix/include/minix/callnr.h	2022-06-14 14:02:48.655495660 +0200
@@ -48,17 +37,6 @@ diff -rupNEZbB minix_original/usr/src/minix/include/minix/ipc.h minix_modified/u
  		mess_lc_vm_brk		m_lc_vm_brk;
  		mess_lc_vm_getphys	m_lc_vm_getphys;
  		mess_lc_vm_rusage	m_lc_vm_rusage;
-diff -rupNEZbB minix_original/usr/src/minix/include/minix/procfs.h minix_modified/usr/src/minix/include/minix/procfs.h
---- minix_original/usr/src/minix/include/minix/procfs.h	2022-06-05 18:10:29.939847321 +0200
-+++ minix_modified/usr/src/minix/include/minix/procfs.h	2022-06-14 14:02:48.655495660 +0200
-@@ -35,6 +35,7 @@
- #define FSTATE_POPEN	'O'
- #define FSTATE_SELECT	'S'
- #define FSTATE_TASK	'T'
-+#define FSTATE_NOTIFY	'N'
- #define FSTATE_UNKNOWN	'?'
- 
- #endif /* _MINIX_PROCFS_H */
 diff -rupNEZbB minix_original/usr/src/minix/servers/vfs/const.h minix_modified/usr/src/minix/servers/vfs/const.h
 --- minix_original/usr/src/minix/servers/vfs/const.h	2022-06-05 18:10:30.379847311 +0200
 +++ minix_modified/usr/src/minix/servers/vfs/const.h	2022-06-14 14:02:48.638828718 +0200
@@ -80,7 +58,7 @@ diff -rupNEZbB minix_original/usr/src/minix/servers/vfs/const.h minix_modified/u
  #define fp_is_blocked(fp)	((fp)->fp_blocked_on != FP_BLOCKED_ON_NONE)
 diff -rupNEZbB minix_original/usr/src/minix/servers/vfs/link.c minix_modified/usr/src/minix/servers/vfs/link.c
 --- minix_original/usr/src/minix/servers/vfs/link.c	2022-06-05 18:10:30.383180645 +0200
-+++ minix_modified/usr/src/minix/servers/vfs/link.c	2022-06-15 08:17:31.333544855 +0200
++++ minix_modified/usr/src/minix/servers/vfs/link.c	2022-06-15 14:36:49.052207901 +0200
 @@ -13,6 +13,7 @@
  
  #include "fs.h"
@@ -94,7 +72,7 @@ diff -rupNEZbB minix_original/usr/src/minix/servers/vfs/link.c minix_modified/us
    put_vnode(vp);
    put_vnode(dirp);
 +  if (r == OK)
-+  	wake_listeners(NOTIFY_CREATE, vp);
++  	wake_listeners(NOTIFY_CREATE, dirp);
    return(r);
  }
  
@@ -113,7 +91,7 @@ diff -rupNEZbB minix_original/usr/src/minix/servers/vfs/link.c minix_modified/us
    put_vnode(vp);
  
 +  if (r == OK)
-+  	wake_listeners(NOTIFY_CREATE, dirp);
++  	wake_listeners(NOTIFY_CREATE, vp);
    return(r);
  }
  
