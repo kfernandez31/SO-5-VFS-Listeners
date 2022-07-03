@@ -5,7 +5,7 @@ Rozwiązania zostały ocenione na podstawie wyników testów automatycznych.
 https://gitlab.com/mimuw-rocznik-2001/so-2022/testy-zad5
 
 ## Testy oficjalne
-https://github.com/kfernandez31/SO-5-VFS-Listeners/tree/main/tests
+https://github.com/kfernandez31/SO-5-VFS-Listeners/tree/main/src/tests
 
 ## Opis wyników i testów
 Testy zostały podzielone na kategorie odpowiadające typom monitorowanego zdarzenia:
