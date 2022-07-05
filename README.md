@@ -4,7 +4,12 @@ What you see is a repository of my solution for task no. 5. of the [Operating Sy
 
 # Brief description
 
-The task was to TODO
+The task was to add a userspace system call in the operating system [Minix](https://github.com/Stichting-MINIX-Research-Foundation/minix/tree/R3.3.0) that would halt the calling process on a chosen file until a chosen event happened. The events were:
+- opening the file,
+- opening the file 3 or more times.
+Additional events, if the file was a directory:
+- creating a file in the directory,
+- moving a file into the directory.
 
 # Full description 
 
