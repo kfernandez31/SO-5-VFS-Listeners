@@ -14,7 +14,7 @@ Additional events, if the file was a directory:
 
 # Full description 
 
-You can find the original task description in Polish [**here**](https://github.com/kfernandez31/SO-2-Processor-Emulator/blob/main/task_description.md).
+You can find the original task description in Polish [**here**](https://github.com/kfernandez31/SO-5-VFS-Listeners/blob/main/task_description.md).
 
 ---
 Copyright of the task's description and resources: MIM UW.
